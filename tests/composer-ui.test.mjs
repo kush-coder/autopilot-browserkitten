@@ -1,0 +1,124 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+
+const source = readFileSync(new URL('../src/sidepanel.js', import.meta.url), 'utf8');
+function section(start, end) {
+  return source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start)));
+}
+
+class Element {
+  constructor(tag = 'div') { this.tag = tag; this.children = []; this.attributes = {}; this.listeners = {}; }
+  appendChild(child) { this.children.push(child); }
+  set innerHTML(value) { assert.equal(value, ''); this.children = []; }
+  setAttribute(key, value) { this.attributes[key] = value; }
+  addEventListener(type, fn) { this.listeners[type] = fn; }
+}
+function attachmentUi() {
+  const bar = new Element();
+  const inline = new Set();
+  const attachments = [];
+  const ctx = vm.createContext({
+    $: () => bar,
+    composerEl: () => ({ querySelectorAll: () => [...inline].map(label => ({ getAttribute: () => label })) }),
+    pendingAttachments: attachments,
+    document: { createElement: tag => new Element(tag) },
+    currentLang: 'en',
+    itemLabelLang: () => 'en',
+    formatItemLabel: (kind, n) => `${kind}${n}`,
+  });
+  vm.runInContext(section('function renderAttachmentPreviews()', '// ── Submit + Agent run'), ctx);
+  return { bar, inline, attachments, ctx };
+}
+
+test('attachments belong to the composer shell and travel with either composer dock', () => {
+  const html = readFileSync(new URL('../src/sidepanel.html', import.meta.url), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+  const stack = [];
+  let found = 0;
+  for (const match of html.matchAll(/<(\/?)([a-z][\w-]*)([^>]*?)>/gi)) {
+    const [, close, name, attrs] = match;
+    if (close) { stack.pop(); continue; }
+    if (/\bid="attachmentPreviewBar"/.test(attrs)) {
+      found++;
+      assert.ok(stack.some(n => n.name === 'footer' && /class="composer"/.test(n.attrs)));
+      assert.match(stack.at(-1).attrs, /class="composer-inner"/);
+    }
+    if (!['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'].includes(name) && !attrs.endsWith('/')) {
+      stack.push({ name, attrs });
+    }
+  }
+  assert.equal(found, 1);
+});
+
+test('uploaded images have thumbnails; removal preserves the other outgoing attachments', () => {
+  const { bar, attachments, ctx } = attachmentUi();
+  attachments.push({ name: 'capture.png', isImage: true, dataUrl: 'data:image/png;base64,AA==', source: 'drop' }, { name: 'notes.txt' });
+  ctx.renderAttachmentPreviews();
+  assert.equal(bar.hidden, false);
+  assert.equal(bar.children[0].children[0].src, attachments[0].dataUrl);
+  assert.equal(bar.children[0].children[1].textContent, 'capture.png');
+  bar.children[0].children.at(-1).listeners.click();
+  assert.deepEqual(attachments.map(a => a.name), ['notes.txt']);
+  assert.equal(bar.children.length, 1);
+  bar.children[0].children.at(-1).listeners.click();
+  assert.equal(bar.hidden, true);
+  assert.equal(bar.children.length, 0);
+});
+
+test('pasted screenshot renders once inline; capture stays off the composer', async () => {
+  const { bar, inline, attachments, ctx } = attachmentUi();
+  Object.assign(ctx, {
+    screenshotAttachInflight: new Set(), lastCaptureAttachKey: '', lastCaptureAttachAt: 0,
+    screenshotAttachKey: value => value,
+    shouldAttachScreenshotToComposer: source => String(source || '').toLowerCase() === 'paste',
+    attachmentFromDataUrl: (dataUrl, props) => ({ ...props, dataUrl, isImage: true }),
+    nextStickyLabel: async () => ({ n: attachments.length + 1 }),
+    clipboardGroupFromState: () => null,
+    insertPastedScreenshotChip: att => inline.add(att.name),
+    copyDataUrlToClipboard: async () => true,
+    showCustomModal: () => assert.fail('attachment failed'), console,
+  });
+  vm.runInContext(section('async function attachScreenshotToChat(payload)', 'async function requestUserScreenshot('), ctx);
+  await ctx.attachScreenshotToChat({ source: 'paste', dataUrl: 'data:image/png;base64,AA==', clipboardOk: true });
+  assert.equal(attachments.length, 1);
+  assert.deepEqual([...inline], ['screenshot1']);
+  assert.equal(bar.hidden, true);
+  await ctx.attachScreenshotToChat({ source: 'button', dataUrl: 'data:image/png;base64,BB==', clipboardOk: true });
+  assert.equal(attachments.length, 1);
+  assert.equal(attachments[0].source, 'paste');
+});
+
+test('welcome first paint lists the three teaching chips by id', () => {
+  const html = readFileSync(new URL('../src/sidepanel.html', import.meta.url), 'utf8');
+  assert.match(html, /id="hintChips"/);
+  assert.match(html, /data-hint-id="create-personal-tool"/);
+  assert.match(html, /data-hint-id="create-workflow"/);
+  assert.match(html, /data-hint-id="use-browser-kitten"/);
+});
+
+test('settings API sections are roster plus add form; diagnostics stay off the add form', () => {
+  const html = readFileSync(new URL('../src/sidepanel.html', import.meta.url), 'utf8');
+  for (const id of [
+    'inferenceVendorList', 'addInferenceBtn', 'inferenceEditor',
+    'imageVendorList', 'addImageBtn', 'imageEditor',
+    'sttVendorList', 'addSttBtn', 'sttEditor',
+    'webVendorList', 'addWebAcquireBtn', 'webAcquireEditor',
+    'inferenceDiagnostics', 'inferenceAdvancedDetails', 'inferenceAutoCheckHost'
+  ]) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  const inferenceCard = html.slice(html.indexOf('id="settingsInferenceCard"'), html.indexOf('id="settingsImageCard"'));
+  const editor = inferenceCard.slice(inferenceCard.indexOf('id="inferenceEditor"'));
+  assert.match(inferenceCard, /id="chatMediaStatusPanel"/);
+  assert.match(inferenceCard, /id="contextWindowStatusPanel"/);
+  assert.doesNotMatch(editor, /id="chatMediaStatusPanel"/);
+  assert.doesNotMatch(editor, /id="contextWindowStatusPanel"/);
+  assert.doesNotMatch(editor, /id="chatMediaSettings"/);
+  assert.doesNotMatch(html, /id="settingsAccessCard"/);
+  assert.doesNotMatch(html, /id="accessFullToggle"/);
+  const i18n = readFileSync(new URL('../src/sidepanel/i18n.js', import.meta.url), 'utf8');
+  assert.match(i18n, /settingsDiagnosticsAdvanced: '高级 \/ 检测'/);
+  assert.match(i18n, /settingsDiagnosticsAdvanced: 'Advanced \/ checks'/);
+});
+

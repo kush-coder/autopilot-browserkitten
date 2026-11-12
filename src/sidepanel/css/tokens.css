@@ -1,0 +1,145 @@
+/**
+ * Browser Kitten · Quiet Black + Quiet Light (workspace Design.md).
+ * Applied via body[data-theme="dark"|"light"]. Theme mode system|light|dark
+ * is resolved in theme.js (also sets color-scheme on html/body).
+ */
+
+:root,
+body[data-theme='dark'] {
+  --paper: #050506;
+  --void: #000000;
+  --ink: #f4f3ef;
+  --muted: #8d8d92;
+  --line: #2a2a2e;
+  --surface: #111113;
+  --surface-2: #1c1c1e;
+  --signal: #ff6a00;
+  --signal-hover: #e85f00;
+
+  --bg-void: var(--void);
+  --bg-stage: var(--paper);
+  --bg-panel: var(--paper);
+  --bg-soft: var(--surface);
+  --bg-elevated: var(--surface);
+  --bg-elevated-2: var(--surface-2);
+  --border: var(--line);
+  --border-strong: #3a3a40;
+  --text: var(--ink);
+  --text-muted: var(--muted);
+  --text-faint: #6b6b70;
+  --accent: var(--signal);
+  --accent-hover: var(--signal-hover);
+  --accent-2: var(--signal);
+  --accent-soft: rgba(255, 106, 0, 0.14);
+  --accent-ring: rgba(255, 106, 0, 0.28);
+  --green: #34d399;
+  --green-soft: rgba(52, 211, 153, 0.12);
+  --amber: #fbbf24;
+  --amber-soft: rgba(251, 191, 36, 0.12);
+  --rose: #fb7185;
+  --rose-soft: rgba(251, 113, 133, 0.14);
+  --danger: #fb7185;
+  --danger-soft: rgba(251, 113, 133, 0.14);
+  --blue: #c4b5fd;
+  --blue-soft: rgba(196, 181, 253, 0.12);
+  --blue-mid: #a78bfa;
+  --shadow: none;
+  --shadow-card: none;
+  --glow-accent: none;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --font: 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans', Arial, sans-serif;
+  --font-code: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
+  --panel-w: 100%;
+  --bg-primary: var(--paper);
+  --bg-surface: var(--surface);
+  --border-color: var(--line);
+  --border-focus: var(--signal);
+  --accent-primary: var(--signal);
+  --accent-secondary: var(--signal);
+  --accent-green: #10b981;
+  --accent-rose: var(--signal);
+  --text-main: var(--ink);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --ambient-a: transparent;
+  --ambient-b: transparent;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-1: 100ms;
+  --dur-2: 180ms;
+  --dur-3: 220ms;
+  --dur-4: 280ms;
+  --hover-open-delay: 220ms;
+  --hover-close-delay: 320ms;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --density-topbar-pad-y: 12px;
+  --density-topbar-pad-x: 14px;
+  --density-stream-pad: 12px;
+  --density-stream-gap: 12px;
+  --density-pick-h: 34px;
+  --density-pick-min-w: 76px;
+  --density-pick-fs: 13px;
+  --density-pick-pad-x: 12px;
+  --density-scroll-w: 6px;
+}
+
+body[data-theme='light'] {
+  --paper: #f4f3ef;
+  --void: #f4f3ef;
+  --ink: #111113;
+  --muted: #6b6b70;
+  --line: #d8d6d1;
+  --surface: #ffffff;
+  --surface-2: #eceae4;
+  --signal: #ff6a00;
+  --signal-hover: #e85f00;
+
+  --bg-void: var(--paper);
+  --bg-stage: var(--paper);
+  --bg-panel: var(--paper);
+  --bg-soft: var(--surface-2);
+  --bg-elevated: var(--surface);
+  --bg-elevated-2: var(--surface-2);
+  --border: var(--line);
+  --border-strong: #c4c2bb;
+  --text: var(--ink);
+  --text-muted: var(--muted);
+  --text-faint: #8d8d92;
+  --accent: var(--signal);
+  --accent-hover: var(--signal-hover);
+  --accent-2: var(--signal);
+  --accent-soft: rgba(255, 106, 0, 0.12);
+  --accent-ring: rgba(255, 106, 0, 0.28);
+  --green: #059669;
+  --green-soft: #ecfdf5;
+  --amber: #b45309;
+  --amber-soft: #fffbeb;
+  --rose: #e11d48;
+  --rose-soft: #fff1f2;
+  --danger: #e11d48;
+  --danger-soft: #fff1f2;
+  --blue: #7c3aed;
+  --blue-soft: #f5f3ff;
+  --blue-mid: #8b5cf6;
+  --shadow: none;
+  --shadow-card: none;
+  --glow-accent: none;
+  --bg-primary: var(--paper);
+  --bg-surface: var(--surface);
+  --border-color: var(--line);
+  --border-focus: var(--signal);
+  --accent-primary: var(--signal);
+  --accent-secondary: var(--signal);
+  --accent-green: #059669;
+  --accent-rose: var(--signal);
+  --text-main: var(--ink);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --ambient-a: transparent;
+  --ambient-b: transparent;
+}

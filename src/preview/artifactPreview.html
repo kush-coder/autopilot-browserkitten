@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>文件预览</title>
+    <link rel="stylesheet" href="host-bar.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #f5f5f5;
+        color: #1a1a1a;
+        font-family: system-ui, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      }
+      #bar.host-file-strip {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-bottom-color: #e5e5e5;
+      }
+      #bar.host-file-strip button {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-color: #d9d9d9;
+      }
+      #bar.host-file-strip button.primary {
+        background: #111113;
+        border-color: transparent;
+        color: #f4f3ef;
+      }
+      #bar.host-file-strip #status {
+        color: #6b6b6b;
+      }
+      #boot {
+        padding: 24px 16px;
+        font-size: 13px;
+        color: #6b636b;
+      }
+      #boot.error {
+        color: #fb7185;
+      }
+      #page {
+        display: block;
+        width: 100%;
+        height: calc(100% - 48px);
+        border: 0;
+        background: #fff;
+      }
+      /* id selectors above outrank the UA [hidden] rule — hidden panes must
+         never occupy layout (a hidden #page pushed #imageWrap off-screen). */
+      #page[hidden],
+      #imageWrap[hidden],
+      #fileCard[hidden],
+      #textWrap[hidden],
+      #mediaWrap[hidden],
+      #inspector[hidden] {
+        display: none;
+      }
+      #imageWrap {
+        display: none;
+        height: calc(100% - 48px);
+        overflow: auto;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+        background-image:
+          linear-gradient(45deg, #ececec 25%, transparent 25%, transparent 75%, #ececec 75%),
+          linear-gradient(45deg, #ececec 25%, transparent 25%, transparent 75%, #ececec 75%);
+        background-size: 16px 16px;
+        background-position: 0 0, 8px 8px;
+      }
+      #imageWrap:not([hidden]) {
+        display: flex;
+      }
+      #image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        background: #fff;
+        box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
+      }
+      #fileCard {
+        display: none;
+        padding: 48px 16px;
+        text-align: center;
+        color: #444;
+      }
+      #fileCard:not([hidden]),
+      #inspector:not([hidden]) {
+        display: block;
+      }
+      .file-card-name {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        word-break: break-all;
+      }
+      .file-card-meta {
+        font-size: 12px;
+        color: #6b6b6b;
+      }
+      #textWrap {
+        display: none;
+        height: calc(100% - 48px);
+        overflow: auto;
+        padding: 16px 20px 32px;
+        box-sizing: border-box;
+        background: #fff;
+      }
+      #textWrap:not([hidden]) {
+        display: block;
+      }
+      #textBody {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: #1a1a1a;
+      }
+      #textTrunc {
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: #9a3412;
+      }
+      #mediaWrap {
+        display: none;
+        height: calc(100% - 48px);
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        box-sizing: border-box;
+        background: #111;
+      }
+      #mediaWrap:not([hidden]) {
+        display: flex;
+      }
+      #mediaWrap audio,
+      #mediaWrap video {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      #inspector {
+        display: none;
+        padding: 32px 20px;
+        max-width: 520px;
+      }
+      #inspector dl {
+        margin: 16px 0 0;
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 8px 12px;
+        font-size: 13px;
+      }
+      #inspector dt {
+        color: #6b6b6b;
+      }
+      #inspector dd {
+        margin: 0;
+        word-break: break-all;
+      }
+      body.is-ready #boot {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar" class="host-file-strip">
+      <span id="title">文件预览</span>
+      <span id="status"></span>
+      <span class="sp"></span>
+      <span class="host-file-actions">
+        <button type="button" class="primary" data-act="save" id="saveBtn">保存</button>
+        <button type="button" data-act="download" id="downloadBtn">下载</button>
+      </span>
+    </div>
+    <div id="boot">正在打开…</div>
+    <iframe id="page" title="preview" hidden></iframe>
+    <div id="imageWrap" hidden>
+      <img id="image" alt="" />
+    </div>
+    <div id="fileCard" hidden></div>
+    <div id="textWrap" hidden>
+      <p id="textTrunc" hidden></p>
+      <pre id="textBody"></pre>
+    </div>
+    <div id="mediaWrap" hidden></div>
+    <div id="inspector" hidden></div>
+    <script type="module" src="artifactPreview.js"></script>
+  </body>
+</html>

@@ -1,0 +1,476 @@
+/**
+ * Motion kit — Quiet Black: no ambient wash, cubic-bezier only.
+ * Conversation chrome: starlight overlay on .task-body / .think-body-wrap.
+ */
+
+.ambient-layer {
+  display: none;
+}
+
+/*
+ * Keep ambient under content WITHOUT forcing position:relative on every
+ * flex child (that broke Side Panel overflow/scroll in Chrome).
+ * Only stacking context for chrome that needs it.
+ */
+.panel > .topbar,
+.panel > .composer,
+.panel > .panel-scroll {
+  position: relative;
+  z-index: 1;
+}
+
+/* Streaming cursor blink */
+@keyframes pw-blink-cursor {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
+.stream-cursor,
+.pw-stream-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.95em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--accent);
+  animation: pw-blink-cursor 900ms step-end infinite;
+}
+
+/* Enter fade-up for task cards */
+@keyframes pw-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.task-card {
+  animation: pw-enter 350ms var(--ease-out) both;
+}
+
+.pick-btn.is-active,
+.pick-btn[aria-pressed='true'] {
+  animation: none;
+}
+
+/* Status running dot */
+@keyframes pw-status-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+}
+
+.status-pill[data-state='running'] .status-dot {
+  background: var(--accent);
+  animation: pw-status-dot 1.1s var(--ease-in-out) infinite;
+}
+
+.status-pill[data-state='running'] {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--accent);
+}
+
+/* Stop button live rings (distinct control — not a recolored send) */
+@keyframes pw-stop-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+@keyframes pw-stop-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+}
+
+.send-btn {
+  position: relative;
+  transition:
+    background var(--dur-2) var(--ease-out),
+    color var(--dur-2),
+    transform var(--dur-1),
+    box-shadow var(--dur-2);
+}
+
+.send-btn.is-send,
+.send-btn:not([hidden]) {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: 999px;
+}
+
+.send-btn.is-send:hover,
+.send-btn:not([hidden]):hover {
+  background: var(--ink);
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+/* Dedicated stop control pulse */
+.stop-btn.is-live,
+.stop-btn:not([hidden]) {
+  position: relative;
+}
+
+.stop-btn.is-live::before,
+.stop-btn.is-live::after,
+.stop-btn:not([hidden])::before,
+.stop-btn:not([hidden])::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  border: 1.5px solid var(--danger);
+  pointer-events: none;
+  animation: pw-stop-ring 1.15s var(--ease-out) infinite;
+}
+
+.stop-btn.is-live::after,
+.stop-btn:not([hidden])::after {
+  animation-delay: 0.38s;
+}
+
+.stop-btn.is-live .stop-icon,
+.stop-btn:not([hidden]) .stop-icon {
+  animation: pw-stop-breathe 900ms var(--ease-in-out) infinite;
+}
+
+/* Home → task dock: FLIP uses WAAPI; soft opacity assist on selection bar */
+@keyframes pw-sel-settle {
+  from { opacity: 0.72; }
+  to { opacity: 1; }
+}
+
+.selection-bar.is-docking-motion {
+  animation: pw-sel-settle 440ms var(--ease-out, ease) both;
+}
+
+/* Focus ring — interactive controls and form fields (composer textarea keeps shell ring) */
+:focus-visible:not(textarea):not(input):not(select):not(.composer-bubble) {
+  outline: 1px solid var(--signal);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.composer-inner textarea:focus-visible,
+.composer-inner #input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/*
+ * Starlight overlay — shared by .task-body and .think-body-wrap.
+ * Only the thumb (::after) lights: glow + particles stay on that pill.
+ * No full-height rail / glowing column. Chat 6px, think 4px.
+ */
+@keyframes starlight-dust {
+  to {
+    background-position:
+      50% 28px,
+      40% -24px,
+      60% 32px,
+      45% -20px,
+      55% 26px,
+      center;
+  }
+}
+
+@keyframes starlight-mote-twinkle {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  40% {
+    opacity: 1;
+  }
+  68% {
+    opacity: 0.64;
+  }
+}
+
+@keyframes starlight-twinkle {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow:
+      0 0 3px 0 rgba(244, 243, 239, 0.45),
+      0 0 7px 1px color-mix(in srgb, var(--blue) 48%, transparent);
+  }
+  42% {
+    filter: brightness(1.28);
+    box-shadow:
+      0 0 4px 1px rgba(255, 255, 255, 0.6),
+      0 0 9px 2px color-mix(in srgb, var(--blue) 56%, transparent);
+  }
+}
+
+.panel.is-thread-open .session-thread,
+.panel.is-thread-open .task-card,
+.think-block {
+  position: relative;
+}
+
+.panel.is-thread-open .session-thread:has(> .task-body.is-scrolling)::after,
+.panel.is-thread-open .task-card:has(> .task-body.is-scrolling)::after,
+.think-block:has(> .think-body-wrap.is-scrolling)::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--starlight-track-top, 46px) + var(--starlight-thumb-top, 0px));
+  right: 3px;
+  width: var(--density-scroll-w, 6px);
+  height: var(--starlight-thumb-h, 48px);
+  overflow: hidden;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 8;
+  background-image:
+    radial-gradient(1.2px 1.2px at 50% 10%, #fff 55%, transparent 70%),
+    radial-gradient(1px 1px at 35% 28%, #e8e6ff 50%, transparent 70%),
+    radial-gradient(1.1px 1.1px at 70% 46%, color-mix(in srgb, var(--blue) 75%, #fff) 55%, transparent 72%),
+    radial-gradient(0.9px 0.9px at 40% 64%, #f4f3ef 48%, transparent 70%),
+    radial-gradient(1.2px 1.2px at 60% 82%, color-mix(in srgb, var(--blue) 65%, #fff) 50%, transparent 70%),
+    linear-gradient(
+      180deg,
+      #f4f3ef,
+      color-mix(in srgb, var(--blue) 52%, #fff) 28%,
+      color-mix(in srgb, var(--ink) 18%, #c4b5fd) 58%,
+      color-mix(in srgb, var(--signal) 22%, #e8e6ff) 80%,
+      #f4f3ef
+    );
+  background-size:
+    6px 28px,
+    6px 28px,
+    6px 32px,
+    6px 28px,
+    6px 32px,
+    100% 100%;
+  background-position:
+    50% 0,
+    40% 4px,
+    60% 8px,
+    45% 2px,
+    55% 6px,
+    center;
+  background-repeat: repeat-y, repeat-y, repeat-y, repeat-y, repeat-y, no-repeat;
+  box-shadow:
+    0 0 3px 0 rgba(244, 243, 239, 0.45),
+    0 0 7px 1px color-mix(in srgb, var(--blue) 48%, transparent);
+  animation:
+    starlight-dust 3.6s linear infinite,
+    starlight-mote-twinkle 2.4s var(--ease-in-out) infinite,
+    starlight-twinkle 1.7s var(--ease-in-out) infinite;
+}
+
+.think-block:has(> .think-body-wrap.is-scrolling)::after {
+  top: calc(var(--starlight-track-top, 0px) + var(--starlight-thumb-top, 0px));
+  right: 4px;
+  width: 4px;
+}
+
+.panel.has-turn-jump.is-thread-open .session-thread:has(> .task-body.is-scrolling)::after,
+.panel.has-turn-jump.is-thread-open .task-card:has(> .task-body.is-scrolling)::after {
+  right: 21px;
+}
+
+/* Popover enter (clipboard export menu etc.) */
+@keyframes pw-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Library / workflow <dialog>: animate open only.
+ * Closed rules use transition:none so exit is instant — no exit translate,
+ * no backdrop-filter interpolation (blur→0 smears), no overlay/display fight.
+ */
+.personal-library-dialog {
+  opacity: 0;
+  transform: translateY(0);
+  transition: none;
+}
+
+.personal-library-dialog[open] {
+  opacity: 1;
+  transform: translateY(0);
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: var(--dur-3, 220ms);
+  transition-timing-function: var(--ease-out, ease);
+  transition-behavior: allow-discrete;
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.personal-library-dialog::backdrop {
+  background-color: transparent;
+  backdrop-filter: none;
+  transition: none;
+}
+
+.personal-library-dialog[open]::backdrop {
+  background-color: color-mix(in srgb, var(--bg-void) 50%, transparent);
+  backdrop-filter: blur(10px);
+  /* Fade dim only on entry; never transition blur (smear on close). */
+  transition-property: background-color, display, overlay;
+  transition-duration: var(--dur-3, 220ms);
+  transition-timing-function: var(--ease-out, ease);
+  transition-behavior: allow-discrete;
+
+  @starting-style {
+    background-color: transparent;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .bot-status-stop {
+    transition: none;
+  }
+  .personal-library-dialog {
+    transform: none;
+    transition: none;
+  }
+  .personal-library-dialog[open] {
+    transform: none;
+    transition: none;
+
+    @starting-style {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  .personal-library-dialog::backdrop,
+  .personal-library-dialog[open]::backdrop {
+    backdrop-filter: none;
+    transition: none;
+  }
+  .ambient-layer::before,
+  .ambient-layer::after,
+  .session-bind-add-btn.composer-bubble:not(.has-bound)::before,
+  .pick-btn.is-active,
+  .pick-btn[aria-pressed='true'],
+  .status-pill[data-state='running'] .status-dot,
+  .stop-btn.is-live::before,
+  .stop-btn.is-live::after,
+  .stop-btn:not([hidden])::before,
+  .stop-btn:not([hidden])::after,
+  .stop-btn .stop-icon,
+  .stream-cursor,
+  .pw-stream-cursor,
+  .task-card,
+  .clip-export-menu.is-open,
+  .clip-export-menu[popover]:popover-open,
+  .context-usage-popover.is-open,
+  .sheet-backdrop,
+  .more-sheet,
+  .personal-library-dialog {
+    animation: none !important;
+  }
+
+  .panel.is-thread-open .session-thread:has(> .task-body.is-scrolling)::after,
+  .panel.is-thread-open .task-card:has(> .task-body.is-scrolling)::after,
+  .think-block:has(> .think-body-wrap.is-scrolling)::after {
+    animation: none !important;
+    filter: none;
+    opacity: 1;
+  }
+
+  .clip-export-item,
+  .history-row,
+  .task-actions .btn,
+  .skill-save-btn,
+  .skill-quick-script-btn,
+  .pick-btn,
+  .shot-btn,
+  .library-entry-btn,
+  .quick-tool,
+  .personal-library-row,
+  .personal-library-row-more,
+  .personal-library-row-menu button,
+  .personal-library-head button,
+  .personal-library-tabs button,
+  .personal-library-create,
+  .personal-library-card button,
+  .workflow-body button,
+  .workflow-footer button,
+  .workflow-footer summary,
+  .workflow-dialog .workflow-head-save,
+  .send-btn,
+  .stop-btn,
+  .sel-expand-body,
+  .drafts-bar .drafts-list,
+  .clip-drawer,
+  .task-stream,
+  .think-body-wrap,
+  .think-body {
+    transition: none !important;
+  }
+  .think-dot,
+  .think-block.is-live .think-dot,
+  .think-block.is-live .think-summary,
+  .think-block.is-live.is-expanded .think-body-wrap,
+  .turn-disclosure.is-live .turn-disclosure-current,
+  .turn-disclosure.is-live .turn-disclosure-current-text,
+  .turn-disclosure.is-pulse,
+  .turn-disclosure.is-pulse .turn-disclosure-current,
+  .turn-disclosure.is-pulse .turn-disclosure-current-text {
+    animation: none !important;
+  }
+  .turn-disclosure.is-live .turn-disclosure-current,
+  .turn-disclosure.is-live .turn-disclosure-current-text,
+  .turn-disclosure.is-pulse .turn-disclosure-current,
+  .turn-disclosure.is-pulse .turn-disclosure-current-text {
+    background-image: none;
+    color: var(--text-muted);
+    -webkit-text-fill-color: var(--text-muted);
+  }
+  .turn-disclosure,
+  .turn-disclosure-current,
+  .turn-disclosure-current-text,
+  .turn-disclosure-line {
+    transition: none !important;
+  }
+}
